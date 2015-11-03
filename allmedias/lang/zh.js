@@ -2,8 +2,8 @@
 Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
-CKEDITOR.plugins.setLang( 'allMedias', 'zh', {
-	allMedias: '插入視頻',
+CKEDITOR.plugins.setLang( 'allmedias', 'zh', {
+	allMedias: '插入多媒體',
 	access: '允許腳本訪問',
 	accessAlways: '永遠',
 	accessNever: '永不',
@@ -15,13 +15,12 @@ CKEDITOR.plugins.setLang( 'allMedias', 'zh', {
 	bgcolor: '背景顏色',
 	chkFull: '啟動全螢幕顯示',
 	chkLoop: '重複',
-	chkMenu: '開啟選單',
 	chkPlay: '自動播放',
 	flashvars: '多媒體變數',
 	hSpace: '水平距離',
 	properties: '多媒體屬性',
 	propertiesTab: '屬性',
-	quality: '質素',
+	quality: '品質',
 	qualityAutoHigh: '高（自動）',
 	qualityAutoLow: '低（自動）',
 	qualityBest: '最好',

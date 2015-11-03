@@ -2,7 +2,7 @@
 Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
-CKEDITOR.plugins.setLang( 'allMedias', 'zh-cn', {
+CKEDITOR.plugins.setLang( 'allmedias', 'zh-cn', {
 	allMedias: '插入视频',
 	access: '允许脚本访问',
 	accessAlways: '总是',

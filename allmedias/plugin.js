@@ -5,149 +5,123 @@
  */
 
 (function() {
-	//var allMediasFilenameRegex = /\.(avi|asf|fla|flv|mov|rm|rmvb|ra|mp3|mp4|mpg|mpeg|qt|wma|wmv)(?:$|\?)/i;
-	
-	function isallMediasEmbed( element ) {
-		var attributes = element.attributes;
-		return ( attributes.mtype == 'allMedias'); // || allMediasFilenameRegex.test( attributes.src || '' ) );
-	}
+    function isAllMediasEmbed(element) {
+        var attributes = element.attributes;
+        return (attributes.mtype === 'allmedias');
+    }
 
-	function createFakeElement( editor, realElement ) {
-		return editor.createFakeParserElement( realElement, 'cke_allMedias', 'allMedias', true );
-	}
+    function createFakeElement(editor, realElement) {
+        return editor.createFakeParserElement(realElement, 'cke_allMedias', 'allmedias', true);
+    }
 
-	CKEDITOR.plugins.add( 'allmedias', {
-		requires: 'dialog,fakeobjects',
-		lang: 'en,zh-cn,zh', // %REMOVE_LINE_CORE%
-		icons: 'allMedias', // %REMOVE_LINE_CORE%
-		onLoad: function() {
-			CKEDITOR.addCss( 'img.cke_allMedias' +
-				'{' +
-					'background-image: url(' + CKEDITOR.getUrl( this.path + 'images/placeholder.png' ) + ');' +
-					'background-position: center center;' +
-					'background-repeat: no-repeat;' +
-					'border: 1px solid #a9a9a9;' +
-					'width: 80px;' +
-					'height: 80px;' +
-				'}'
-				);
-			//CKEDITOR.scriptLoader.load( 'plugins/allmedias/jwplayer.js' );
+    function initAllMedias(editor) {
+        editor.addCommand('allmedias', new CKEDITOR.dialogCommand('allmedias'));
+        editor.ui.addButton && editor.ui.addButton('allmedias', {
+            label: editor.lang.allmedias.allMedias,
+            command: 'allmedias',
+            toolbar: 'insert,20'
+        });
+        CKEDITOR.dialog.add('allmedias', this.path + 'dialogs/allmedias.js');
 
-		},
-		init: function( editor ) {
-			editor.addCommand( 'allMedias', new CKEDITOR.dialogCommand( 'allMedias' ) );
-			editor.ui.addButton && editor.ui.addButton( 'allMedias', {
-				label: editor.lang.allMedias.allMedias,
-				command: 'allMedias',
-				toolbar: 'insert,20'
-			});
-			CKEDITOR.dialog.add( 'allMedias', this.path + 'dialogs/allMedias.js' );
+        // If the "menu" plugin is loaded, register the menu items.
+        if (editor.addMenuItems) {
+            editor.addMenuGroup('mediagroup');
+            editor.addMenuItems({
+                mediamenu: {
+                    label: editor.lang.allmedias.properties,
+                    command: 'allmedias',
+                    group: 'mediagroup',
+                    icons: this.icons
+                }
+            });
+        }
 
-			// If the "menu" plugin is loaded, register the menu items.
-			if ( editor.addMenuItems ) {
-				editor.addMenuGroup( 'mediagroup' );
-				editor.addMenuItems({
-					mediamenu: {
-						label: editor.lang.allMedias.properties,
-						command: 'allMedias',
-						group: 'mediagroup',
-						icon:  this.icons,
-					}
-				});
-			}
+        editor.on('doubleclick', function(evt) {
+            var element = evt.data.element;
 
-			editor.on( 'doubleclick', function( evt ) {
-				var element = evt.data.element;
+            if (element.data('cke-real-element-type') === 'allmedias') {
+                evt.data.dialog = 'allmedias';
+            }
+        });
 
-				if ( element.is( 'img' ) && element.data( 'cke-real-element-type' ) == 'allMedias' )
-					evt.data.dialog = 'allMedias';
-			});
+        // If the "contextmenu" plugin is loaded, register the listeners.
+        if (editor.contextMenu) {
+            editor.contextMenu.addListener(function(element, selection) {
+                if (element && element.is('img') && !element.isReadOnly() && element.data('cke-real-element-type') == 'allMedias') {
+                    return {
+                        mediamenu: CKEDITOR.TRISTATE_OFF
+                    };
+                }
+            });
+        }
+    }
 
-			// If the "contextmenu" plugin is loaded, register the listeners.
-			if ( editor.contextMenu ) {
-				editor.contextMenu.addListener( function( element, selection ) {
-					if ( element && element.is( 'img' ) && !element.isReadOnly() && element.data( 'cke-real-element-type' ) == 'allMedias' )
-						return { mediamenu: CKEDITOR.TRISTATE_OFF };
-				});
-			}
-		},
+    function afterInitAllMedias(editor) {
+        var
+            dataProcessor = editor.dataProcessor,
+            dataFilter = dataProcessor && dataProcessor.dataFilter,
+            //htmlFilter = dataProcessor && dataProcessor.htmlFilter,
+            nodes = {
+                'video': function(element) {
+                    if (!isAllMediasEmbed(element)) {
+                        return null;
+                    }
+                    element.name = 'cke:video';
+                    return createFakeElement(editor, element);
+                },
+                'cke:video': function(element) {
+                    if (!isAllMediasEmbed(element)) {
+                        return null;
+                    }
 
-		afterInit: function( editor ) {
-			var dataProcessor = editor.dataProcessor,
-				dataFilter = dataProcessor && dataProcessor.dataFilter;
-				htmlFilter = dataProcessor && dataProcessor.htmlFilter;
+                    return createFakeElement(editor, element);
+                },
+                'audio': function(element) {
+                    if (!isAllMediasEmbed(element)) {
+                        return null;
+                    }
+                    element.name = 'cke:audio';
+                    return createFakeElement(editor, element);
+                },
+                'cke:audio': function(element) {
+                    if (!isAllMediasEmbed(element)) {
+                        return null;
+                    }
 
-			if ( dataFilter ) {
-				dataFilter.addRules({
-					elements: {
-						'cke:object': function( element ) {
-							var attributes = element.attributes;
-								//classId = attributes.classid && String( attributes.classid ).toLowerCase();							
+                    return createFakeElement(editor, element);
+                },
+                'cke:embed': function(element) {
+                    if (!isAllMediasEmbed(element)) {
+                        return null;
+                    }
 
-							if ( !isallMediasEmbed( element ) ) {
-								// Look for the inner <embed>
-								for ( var i = 0; i < element.children.length; i++ ) {
-									if ( element.children[ i ].name == 'cke:embed' ) {
-										if ( !isallMediasEmbed( element.children[ i ] ) )
-											return null;
+                    return createFakeElement(editor, element);
+                }
+            };
 
-										return createFakeElement( editor, element );
-									}
-								}
-								return null;
-							}
-							else{
-								return createFakeElement( editor, element );
-							}							
-						},
+        if (dataFilter) {
+            dataFilter.addRules({ elements: nodes }, 1);
+        }
+    }
 
-						'cke:embed': function( element ) {
-							if ( !isallMediasEmbed( element ) )
-								return null;
-
-							return createFakeElement( editor, element );
-						}
-					}
-				}, 1 );
-			}
-			/*
-			if ( htmlFilter ) {
-				htmlFilter.addRules({
-					elements: {
-						'cke:object': function( element ) {
-							if ( element.attributes && element.attributes[ 'mtype' ] )
-								delete element.name;
-						}
-					}
-				});
-			}
-			*/
-		}
-	});
+    CKEDITOR.plugins.add('allmedias', {
+        requires: 'dialog,fakeobjects',
+        lang: ['en', 'zh-cn', 'zh'],
+        icons: 'allmedias', // %REMOVE_LINE_CORE%
+        onLoad: function() {
+            CKEDITOR.addCss([
+            	'img.cke_allMedias {',
+                    'background-image: url(' + CKEDITOR.getUrl(this.path + 'images/placeholder.png') + ');',
+                    'background-position: center center;',
+                    'background-repeat: no-repeat;',
+                    'border: 1px solid #a9a9a9;',
+                    'width: 80px;',
+                    'height: 80px;',
+                '}'
+            ].join(''));
+            //CKEDITOR.scriptLoader.load( 'plugins/allmedias/jwplayer.js' );
+        },
+        init: initAllMedias,
+        afterInit: afterInitAllMedias
+    });
 })();
-
-CKEDITOR.tools.extend( CKEDITOR.config, {
-	/**
-	 * Save as `<embed>` tag only. This tag is unrecommended.
-	 *
-	 * @cfg {Boolean} [allMediasEmbedTagOnly=false]
-	 * @member CKEDITOR.config
-	 */
-	allMediasEmbedTagOnly: false,
-
-	/**
-	 * Add `<embed>` tag as alternative: `<object><embed></embed></object>`.
-	 *
-	 * @cfg {Boolean} [allMediasAddEmbedTag=false]
-	 * @member CKEDITOR.config
-	 */
-	allMediasAddEmbedTag: true,
-
-	/**
-	 * Use {@link #allMediasEmbedTagOnly} and {@link #allMediasAddEmbedTag} values on edit.
-	 *
-	 * @cfg {Boolean} [allMediasConvertOnEdit=false]
-	 * @member CKEDITOR.config
-	 */
-	allMediasConvertOnEdit: false
-});
